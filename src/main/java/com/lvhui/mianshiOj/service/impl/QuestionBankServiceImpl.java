@@ -10,8 +10,8 @@ import com.lvhui.mianshiOj.exception.ThrowUtils;
 import com.lvhui.mianshiOj.mapper.QuestionBankMapper;
 import com.lvhui.mianshiOj.model.dto.questionBank.QuestionBankQueryRequest;
 import com.lvhui.mianshiOj.model.entity.QuestionBank;
-import com.lvhui.mianshiOj.model.entity.QuestionBankFavour;
-import com.lvhui.mianshiOj.model.entity.QuestionBankThumb;
+//import com.lvhui.mianshiOj.model.entity.QuestionBankFavour;
+//import com.lvhui.mianshiOj.model.entity.QuestionBankThumb;
 import com.lvhui.mianshiOj.model.entity.User;
 import com.lvhui.mianshiOj.model.vo.QuestionBankVO;
 import com.lvhui.mianshiOj.model.vo.UserVO;
@@ -82,11 +82,9 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
         Long id = questionBankQueryRequest.getId();
         Long notId = questionBankQueryRequest.getNotId();
         String title = questionBankQueryRequest.getTitle();
-        String content = questionBankQueryRequest.getContent();
         String searchText = questionBankQueryRequest.getSearchText();
         String sortField = questionBankQueryRequest.getSortField();
         String sortOrder = questionBankQueryRequest.getSortOrder();
-        List<String> tagList = questionBankQueryRequest.getTags();
         Long userId = questionBankQueryRequest.getUserId();
         // todo 补充需要的查询条件
         // 从多字段中搜索
@@ -96,13 +94,6 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
         }
         // 模糊查询
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
-        queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
-        // JSON 数组查询
-        if (CollUtil.isNotEmpty(tagList)) {
-            for (String tag : tagList) {
-                queryWrapper.like("tags", "\"" + tag + "\"");
-            }
-        }
         // 精确查询
         queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
@@ -136,23 +127,23 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
         }
         UserVO userVO = userService.getUserVO(user);
         questionBankVO.setUser(userVO);
-        // 2. 已登录，获取用户点赞、收藏状态
-        long questionBankId = questionBank.getId();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            // 获取点赞
-            QueryWrapper<QuestionBankThumb> questionBankThumbQueryWrapper = new QueryWrapper<>();
-            questionBankThumbQueryWrapper.in("questionBankId", questionBankId);
-            questionBankThumbQueryWrapper.eq("userId", loginUser.getId());
-            QuestionBankThumb questionBankThumb = questionBankThumbMapper.selectOne(questionBankThumbQueryWrapper);
-            questionBankVO.setHasThumb(questionBankThumb != null);
-            // 获取收藏
-            QueryWrapper<QuestionBankFavour> questionBankFavourQueryWrapper = new QueryWrapper<>();
-            questionBankFavourQueryWrapper.in("questionBankId", questionBankId);
-            questionBankFavourQueryWrapper.eq("userId", loginUser.getId());
-            QuestionBankFavour questionBankFavour = questionBankFavourMapper.selectOne(questionBankFavourQueryWrapper);
-            questionBankVO.setHasFavour(questionBankFavour != null);
-        }
+//        // 2. 已登录，获取用户点赞、收藏状态
+//        long questionBankId = questionBank.getId();
+//        User loginUser = userService.getLoginUserPermitNull(request);
+//        if (loginUser != null) {
+//            // 获取点赞
+//            QueryWrapper<QuestionBankThumb> questionBankThumbQueryWrapper = new QueryWrapper<>();
+//            questionBankThumbQueryWrapper.in("questionBankId", questionBankId);
+//            questionBankThumbQueryWrapper.eq("userId", loginUser.getId());
+//            QuestionBankThumb questionBankThumb = questionBankThumbMapper.selectOne(questionBankThumbQueryWrapper);
+//            questionBankVO.setHasThumb(questionBankThumb != null);
+//            // 获取收藏
+//            QueryWrapper<QuestionBankFavour> questionBankFavourQueryWrapper = new QueryWrapper<>();
+//            questionBankFavourQueryWrapper.in("questionBankId", questionBankId);
+//            questionBankFavourQueryWrapper.eq("userId", loginUser.getId());
+//            QuestionBankFavour questionBankFavour = questionBankFavourMapper.selectOne(questionBankFavourQueryWrapper);
+//            questionBankVO.setHasFavour(questionBankFavour != null);
+//        }
         // endregion
 
         return questionBankVO;
@@ -183,26 +174,26 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
         Set<Long> userIdSet = questionBankList.stream().map(QuestionBank::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
-        // 2. 已登录，获取用户点赞、收藏状态
-        Map<Long, Boolean> questionBankIdHasThumbMap = new HashMap<>();
-        Map<Long, Boolean> questionBankIdHasFavourMap = new HashMap<>();
-        User loginUser = userService.getLoginUserPermitNull(request);
-        if (loginUser != null) {
-            Set<Long> questionBankIdSet = questionBankList.stream().map(QuestionBank::getId).collect(Collectors.toSet());
-            loginUser = userService.getLoginUser(request);
-            // 获取点赞
-            QueryWrapper<QuestionBankThumb> questionBankThumbQueryWrapper = new QueryWrapper<>();
-            questionBankThumbQueryWrapper.in("questionBankId", questionBankIdSet);
-            questionBankThumbQueryWrapper.eq("userId", loginUser.getId());
-            List<QuestionBankThumb> questionBankQuestionBankThumbList = questionBankThumbMapper.selectList(questionBankThumbQueryWrapper);
-            questionBankQuestionBankThumbList.forEach(questionBankQuestionBankThumb -> questionBankIdHasThumbMap.put(questionBankQuestionBankThumb.getQuestionBankId(), true));
-            // 获取收藏
-            QueryWrapper<QuestionBankFavour> questionBankFavourQueryWrapper = new QueryWrapper<>();
-            questionBankFavourQueryWrapper.in("questionBankId", questionBankIdSet);
-            questionBankFavourQueryWrapper.eq("userId", loginUser.getId());
-            List<QuestionBankFavour> questionBankFavourList = questionBankFavourMapper.selectList(questionBankFavourQueryWrapper);
-            questionBankFavourList.forEach(questionBankFavour -> questionBankIdHasFavourMap.put(questionBankFavour.getQuestionBankId(), true));
-        }
+//        // 2. 已登录，获取用户点赞、收藏状态
+//        Map<Long, Boolean> questionBankIdHasThumbMap = new HashMap<>();
+//        Map<Long, Boolean> questionBankIdHasFavourMap = new HashMap<>();
+//        User loginUser = userService.getLoginUserPermitNull(request);
+//        if (loginUser != null) {
+//            Set<Long> questionBankIdSet = questionBankList.stream().map(QuestionBank::getId).collect(Collectors.toSet());
+//            loginUser = userService.getLoginUser(request);
+//            // 获取点赞
+//            QueryWrapper<QuestionBankThumb> questionBankThumbQueryWrapper = new QueryWrapper<>();
+//            questionBankThumbQueryWrapper.in("questionBankId", questionBankIdSet);
+//            questionBankThumbQueryWrapper.eq("userId", loginUser.getId());
+//            List<QuestionBankThumb> questionBankQuestionBankThumbList = questionBankThumbMapper.selectList(questionBankThumbQueryWrapper);
+//            questionBankQuestionBankThumbList.forEach(questionBankQuestionBankThumb -> questionBankIdHasThumbMap.put(questionBankQuestionBankThumb.getQuestionBankId(), true));
+//            // 获取收藏
+//            QueryWrapper<QuestionBankFavour> questionBankFavourQueryWrapper = new QueryWrapper<>();
+//            questionBankFavourQueryWrapper.in("questionBankId", questionBankIdSet);
+//            questionBankFavourQueryWrapper.eq("userId", loginUser.getId());
+//            List<QuestionBankFavour> questionBankFavourList = questionBankFavourMapper.selectList(questionBankFavourQueryWrapper);
+//            questionBankFavourList.forEach(questionBankFavour -> questionBankIdHasFavourMap.put(questionBankFavour.getQuestionBankId(), true));
+//        }
         // 填充信息
         questionBankVOList.forEach(questionBankVO -> {
             Long userId = questionBankVO.getUserId();
@@ -211,8 +202,8 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
                 user = userIdUserListMap.get(userId).get(0);
             }
             questionBankVO.setUser(userService.getUserVO(user));
-            questionBankVO.setHasThumb(questionBankIdHasThumbMap.getOrDefault(questionBankVO.getId(), false));
-            questionBankVO.setHasFavour(questionBankIdHasFavourMap.getOrDefault(questionBankVO.getId(), false));
+//            questionBankVO.setHasThumb(questionBankIdHasThumbMap.getOrDefault(questionBankVO.getId(), false));
+//            questionBankVO.setHasFavour(questionBankIdHasFavourMap.getOrDefault(questionBankVO.getId(), false));
         });
         // endregion
 
