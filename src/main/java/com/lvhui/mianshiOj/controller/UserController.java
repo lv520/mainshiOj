@@ -21,7 +21,9 @@ import com.lvhui.mianshiOj.model.vo.LoginUserVO;
 import com.lvhui.mianshiOj.model.vo.UserVO;
 import com.lvhui.mianshiOj.service.UserService;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -316,4 +318,27 @@ public class UserController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+
+    /**
+     * 添加用户签到记录
+
+     * @param request
+     * @return
+     */
+    @PostMapping("/add/sign_in")
+    public BaseResponse<Boolean> addUserSignIn(HttpServletRequest request) {
+        // 登录才能签到
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.addUserSignIn(loginUser.getId());
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/get/sign_in")
+    public BaseResponse<List<Integer>> getUserSignInRecord(Integer year ,HttpServletRequest request) {
+        User user = userService.getLoginUser(request);
+        List<Integer> userSignInRecord = userService.getUserSignInRecord(user.getId(), year);
+        return ResultUtils.success(userSignInRecord);
+    }
+
+
 }
