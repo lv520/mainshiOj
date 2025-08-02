@@ -43,6 +43,19 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/hotkey-client-0.0.4-SNAPSHOT.jar</systemPath>
         </dependency>
+        <!--sentinel-->
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-transport-simple-http</artifactId>
+            <version>1.8.6</version>
+        </dependency>
+        <!--talk with sentinel dashboard-->
+        <dependency>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-transport-simple-http</artifactId>
+            <version>1.8.6</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
