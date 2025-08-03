@@ -22,8 +22,9 @@ import javax.servlet.http.HttpServletRequest;
  *
    
  */
-@Aspect
-@Component
+// 为使用 saToken 注解鉴权 注释掉以下两行
+//@Aspect
+//@Component
 public class AuthInterceptor {
 
     @Resource
