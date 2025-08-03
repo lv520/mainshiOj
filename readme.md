@@ -22,5 +22,9 @@ http://localhost:8111/
 
 http://localhost:8121/
 
+nacos：
+startup.cmd -m standalone
+http://localhost:8848/nacos
+
 
 
